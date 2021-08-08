@@ -11,10 +11,6 @@ import requests as rqs
 import os 
 import platform 
 from datetime import date, datetime, timedelta
-# for sending email :
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 
 ############################################################
 
@@ -27,7 +23,7 @@ def clear_screen():                                     # clear the terminal scr
         os.system(command)
 
 
-def login():                                            # log with your user ans password to get token and information
+def login():                                            # log with your user and password to get token and information
     user = str(input("Votre nom d'utilisateur :\n>>> "))
     clear_screen()
     mdp = str(input("Votre mot de passe : \n>>> "))
