@@ -11,11 +11,14 @@ from function import *
 from time import sleep
 
 ############################################################
-
+debug_mode = False
 
 def main():
     clear_screen()
     account_data = login()
+    if debug_mode == True:
+        print("account data = " + str(account_data))
+        print("affichage menu")
     token = account_data['token']
     id = account_data['id']
     menu(token, id)

@@ -11,6 +11,7 @@ import requests as rqs
 import os 
 import platform 
 from datetime import date, datetime, timedelta
+from main import debug_mode
 
 ############################################################
 
@@ -32,6 +33,8 @@ def login():                                            # log with your user and
     data = 'data={\n\t\"identifiant\": \"' + user + '\",\n\t\"motdepasse\": \"' + mdp + '\"\n}'
     url = "https://api.ecoledirecte.com/v3/login.awp"
     response = rqs.post(url=url, data=data).json()      # post a request with data in body and make the response in a json file
+    if debug_mode == True:
+        print(response)
     if response['code'] == 200:
         print("Authentification réussi !!!\n")
         account_data = {                                        # make an array with the response information
@@ -52,7 +55,7 @@ def fetch_homework(token, id, date=None):               # get the list of homewo
     if date == None:
         url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(id) + '/cahierdetexte.awp?verbe=get'
     else:
-        url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(id) + '/cahierdetexte/' + date + '.awp?verbe=get&'
+        url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(id) + '/cahierdetexte/' + str(date) + '.awp?verbe=get&'
     response = rqs.post(url=url, data=data).json()
     if response['code'] == 200:
         return response
@@ -62,16 +65,17 @@ def fetch_homework(token, id, date=None):               # get the list of homewo
 
 def fetch_emploi_du_temps(token, id, date_debut=None, date_fin=None):   # get the planning of the week
     if date_debut or date_fin == None:
-        day = date.today().isoformat()
-        dt = datetime.strptime(day, '%d/%b/%Y')
-        date_debut = dt - timedelta(days=dt.weekday())
+        day_iso = date.today()
+        day_str = datetime.strftime(day_iso, '%d-%m-%Y')
+        day_obj = datetime.strptime(day_str, '%d-%m-%Y')
+        date_debut = day_obj - timedelta(days=day_obj.weekday())
         date_fin = date_debut + timedelta(days=5)
-        data = 'data={"dateDebut": "' + date_debut + '", "dateFin": "' + date_fin + '", "avecTrous": false, "token": "' + token + '"}'
+        data = 'data={"dateDebut": "' + str(date_debut) + '", "dateFin": "' + str(date_fin) + '", "avecTrous": false, "token": "' + str(token) + '"}'
         url = "https://api.ecoledirecte.com/v3/E/" + str(id) + "/EmploiDuTemps.awp?verbe=get&"
         response = rqs.post(url, data).json()
         return response
     else:
-        data = 'data={"dateDebut": "' + date_debut + '", "dateFin": "' + date_fin + '", "avecTrous": false, "token": "' + token + '"}'
+        data = 'data={"dateDebut": "' + str(date_debut) + '", "dateFin": "' + str(date_fin) + '", "avecTrous": false, "token": "' + str(token) + '"}'
         url = "https://api.ecoledirecte.com/v3/E/" + str(id) + "/EmploiDuTemps.awp?verbe=get&"
         response = rqs.post(url, data).json()
         return response
