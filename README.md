@@ -24,5 +24,5 @@ Il permet de récupérer :
 
 #### Et voilà, le programme est lancé 🎉
 
-### ⚠ Le projet est en cours de développement car étant donné que école direct est fermé durant les vaccances, aucune requet ne renvoie de donnée mais la base est fonctionnel.
+### ⚠ Le projet est en cours de développement donc les fonctionnalitées ne sont pas encore oppérationnelle
 
