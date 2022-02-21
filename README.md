@@ -1,28 +1,32 @@
-# salut 👋
+# Hello 👋
 
-##### Voici mon programme python qui utilise l'API privé de école direct.
+##### Here is my python program which uses the private API of ecole direct
 
-Il permet de récupérer :
- - ses devoirs
-    - a venir
-    - d'un jour précis
- - sont planning de cours
-    - de la semaine
-    - d'une date précise
- - ses notes ( en développement )
-    - moyenne de la classe 
-    - moyenne du trimestre   
-    - moyenne de l'année   
-    - toutes les notes    
+It allows you to recover:
+ - your homeworks
+    - to come up
+    - of a specific day
+ - your course schedule
+    - of the week
+    - of a specific date
+ - your grades (in development)
+    - class average
+    - quarterly average
+    - average for the year
+    - all grades
 
-## installation 
+## Launch
 
-#### 1) Téléchargé le projet
+#### 1) Download the project
 
-#### 2) Sur le terminal du projet, taper la ligne suivante :
+#### 2) On the terminal, write the next line :
 #### `python main.py`
 
-#### Et voilà, le programme est lancé 🎉
+#### And that's it, the program is running 🎉
 
-### ⚠ Le projet est en cours de développement car étant donné que école direct est fermé durant les vaccances, aucune requet ne renvoie de donnée mais la base est fonctionnel.
+### ⚠ The project is under development so the features are not yet operational
+
+## Help/contact
+If you want to help me in this project or report me a bug, don't hesitate.
+My social media is my profil and for a bug, just creat an issue.
 
