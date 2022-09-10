@@ -46,8 +46,21 @@ def login():                                            # log with your user and
         clear_screen()
     print("Authentification en cours . . .")
     data = 'data={\n\t\"identifiant\": \"' + user + '\",\n\t\"motdepasse\": \"' + mdp + '\"\n}'
-    url = "https://api.ecoledirecte.com/v3/login.awp"
-    response = rqs.post(url=url, data=data).json()      # post a request with data in body and make the response in a json file
+    headers = {
+        'accept': 'application/json, text/plain, */*',
+        'authority': 'api.ecoledirecte.com',
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/104.0.0.0 Safari/537.36',
+        'content-type': 'application/x-www-form-urlencoded',
+        'sec-gpc': '1',
+        'origin': 'https://www.ecoledirecte.com',
+        'sec-fetch-site': 'same-site',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-dest': 'empty',
+        'referer': 'https://www.ecoledirecte.com/',
+        'accept-language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7'
+    }
+    url = "https://api.ecoledirecte.com/v3/login.awp?v=4.17.10"
+    response = rqs.post(url=url, data=data, headers=headers).json()      # post a request with data in body and make the response in a json file
     if debug_mode == True:
         print(response)
     if response['code'] == 200:
