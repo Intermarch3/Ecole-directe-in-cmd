@@ -60,8 +60,17 @@ class EcoleDirecte:
             password: your password (str)
             debug_mode: display request response and more (bool)
         - - - - - - -
-        return: None
+        return: 
+            response code (str)
+            response message (str)
         """
+        # assert test on args
+        try:
+            assert type(user) == str and user != ''
+            assert type(password) == str and password != ''
+        except:
+            print("Bad or empty args !!!")
+        # initialize object var
         self.user = user
         self.password = password
         self.token = ""
@@ -79,6 +88,7 @@ class EcoleDirecte:
             'referer': 'https://www.ecoledirecte.com/',
             'accept-language': 'fr-FR,fr;q=0.9,en-US;q=0.8,en;q=0.7'
         }
+        # login
         data = 'data={\n\t\"uuid\": \"\",\n\t\"identifiant\": \"' + self.user + '\",\n\t\"motdepasse\": \"' + self.password + '\"\n}'
         url = "https://api.ecoledirecte.com/v3/login.awp?v=4.17.10"
         response = rqs.post(url=url, data=data, headers=self.header).json()
@@ -91,9 +101,10 @@ class EcoleDirecte:
             self.email = response['data']['accounts'][0]['email']
         elif response['code'] == 505:
             print("Nom d'utilisateur ou mot de passe invalide !!!\n\n")
-            sys.exit()
         else:
             print("Erreur " + str(response['code']) + " : " + str(response['message']))
+        return response['code'], response['message']
+
 
     def fetch_homework(self, date_choisie=False):
         """
@@ -161,6 +172,7 @@ class EcoleDirecte:
                 return response
             else:
                 print('erreur ' + str(response['code']) + '\t message : ' + str(response['message']))
+
 
     def fetch_schredule(self, date_debut=None, date_fin=None):
         """
