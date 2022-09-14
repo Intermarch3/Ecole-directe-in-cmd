@@ -7,20 +7,14 @@
 
 #################### - Import space - ######################
 
+from click import BadParameter
 import requests as rqs
-import os, sys
+import os
 import platform 
 from datetime import date, datetime, timedelta 
 from base64 import b64decode
 from bs4 import BeautifulSoup
 from main import *
-
-############################################################
-
-################### - Constant space - #####################
-
-DEBUG = True
-DEV = True
 
 ############################################################
 
@@ -99,11 +93,11 @@ class EcoleDirecte:
             self.token = response['token']
             self.id = response['data']['accounts'][0]['id']
             self.email = response['data']['accounts'][0]['email']
+            self.header['origin'] = "https://www.ecoledirecte.com"
         elif response['code'] == 505:
             print("Nom d'utilisateur ou mot de passe invalide !!!\n\n")
         else:
             print("Erreur " + str(response['code']) + " : " + str(response['message']))
-        return response['code'], response['message']
 
 
     def fetch_homework(self, date_choisie=False):
@@ -115,16 +109,21 @@ class EcoleDirecte:
         - - - - - - -
         return: None
         """
-        data = 'data={\n\t\"token\": \"' + self.token + '\"\n}'
-        if date_choisie == None:
+        data = 'data={}'
+        if date_choisie == False:
             date_iso = datetime.now()
             date_today = datetime.strftime(date_iso, '%Y-%m-%d')
             url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte' + str(date_today) + '.awp?verbe=get'
-            response = rqs.post(url, data, headers=self.header).json()
+            response = rqs.post(url, data, headers=self.header).text
+            print(response)
+            try: 
+                response.json()
+            except:
+                print("json error")
             data = response['data']
             if self.debug_mode == True:
                 print(data)
-        elif date_choisie == True:
+        elif date_choisie == "A_venir":
             url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte.awp?verbe=get'
             response = rqs.post(url=url, data=data, headers=self.header).json()
             data = response['data']
@@ -163,8 +162,8 @@ class EcoleDirecte:
             self.token = response['token']
             clear_screen()
             menu(self)
-        else:
-            date = datetime.strftime(date_choisie, '%d-%m-%Y')
+        elif date_choisie != False and date_choisie != "A_venir":
+            date = datetime.strftime(date_choisie, '%Y-%m-%d')
             url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte/' + str(date) + '.awp?verbe=get&'
             response = rqs.post(url=url, data=data, headers=self.header).json()
             if response['code'] == 200:
@@ -172,6 +171,8 @@ class EcoleDirecte:
                 return response
             else:
                 print('erreur ' + str(response['code']) + '\t message : ' + str(response['message']))
+        else:
+            raise BadParameter("Bad args !!!")
 
 
     def fetch_schredule(self, date_debut=None, date_fin=None):

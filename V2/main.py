@@ -14,8 +14,8 @@ from functions import *
 
 ################### - Constant space - #####################
 
-DEBUG = True
-DEV = True
+DEBUG = False
+DEV = False
 
 ############################################################
 
