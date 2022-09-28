@@ -84,7 +84,7 @@ class EcoleDirecte:
         }
         # login
         data = 'data={\n\t\"uuid\": \"\",\n\t\"identifiant\": \"' + self.user + '\",\n\t\"motdepasse\": \"' + self.password + '\"\n}'
-        url = "https://api.ecoledirecte.com/v3/login.awp?v=4.17.10"
+        url = "https://api.ecoledirecte.com/v3/login.awp?v=4.18.3"
         response = rqs.post(url=url, data=data, headers=self.header).json()
         if debug_mode == True:
             print(response['token'])
@@ -113,7 +113,7 @@ class EcoleDirecte:
         if date_choisie == False:
             date_iso = datetime.now()
             date_today = datetime.strftime(date_iso, '%Y-%m-%d')
-            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte' + str(date_today) + '.awp?verbe=get'
+            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte' + str(date_today) + '.awp?v=4.18.3&verbe=get'
             response = rqs.post(url, data, headers=self.header).text
             print(response)
             try: 
@@ -124,7 +124,7 @@ class EcoleDirecte:
             if self.debug_mode == True:
                 print(data)
         elif date_choisie == "A_venir":
-            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte.awp?verbe=get'
+            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte.awp?v=4.18.3&verbe=get'
             response = rqs.post(url=url, data=data, headers=self.header).json()
             data = response['data']
             if self.debug_mode == True:
@@ -145,7 +145,7 @@ class EcoleDirecte:
             date_devoir = date_devoir.strftime("%Y-%m-%d")
             self.token = response['token']
             data = 'data={\n\t\"token\": \"' + str(self.token) + '\"\n}'
-            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte/' + str(date_devoir) + '.awp?verbe=get&'
+            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte/' + str(date_devoir) + '.awp?v=4.18.3&verbe=get&'
             response = rqs.post(url=url, data=data, headers=self.header).json()
             clear_screen()
             print("================================- Devoirs le ", date_devoir, " -================================")
@@ -164,7 +164,7 @@ class EcoleDirecte:
             menu(self)
         elif date_choisie != False and date_choisie != "A_venir":
             date = datetime.strftime(date_choisie, '%Y-%m-%d')
-            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte/' + str(date) + '.awp?verbe=get&'
+            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte/' + str(date) + '.awp?v=4.18.3&verbe=get&'
             response = rqs.post(url=url, data=data, headers=self.header).json()
             if response['code'] == 200:
                 print(response['data'][0])
@@ -192,12 +192,12 @@ class EcoleDirecte:
             date_fin = date_debut + timedelta(days=5)
             print("Demande de l'emploi du temps de la semaine ( du " + str(date_debut) + " au " + str(date_fin) + " )")
             data = 'data={"dateDebut": "' + str(date_debut) + '", "dateFin": "' + str(date_fin) + '", "avecTrous": false, "token": "' + str(self.token) + '"}'
-            url = "https://api.ecoledirecte.com/v3/E/" + str(self.id) + "/EmploiDuTemps.awp?verbe=get&"
+            url = "https://api.ecoledirecte.com/v3/E/" + str(self.id) + "/EmploiDuTemps.awp?v=4.18.3&verbe=get&"
             response = rqs.post(url, data, headers=self.header).json()
             return response
         else:
             print("Demande de l'emploi du temps ( du " + str(date_debut) + " au " + str(date_fin) + " )")
             data = 'data={"dateDebut": "' + str(date_debut) + '", "dateFin": "' + str(date_fin) + '", "avecTrous": false, "token": "' + str(self.token) + '"}'
-            url = "https://api.ecoledirecte.com/v3/E/" + str(id) + "/EmploiDuTemps.awp?verbe=get&"
+            url = "https://api.ecoledirecte.com/v3/E/" + str(id) + "/EmploiDuTemps.awp?v=4.18.3&verbe=get&"
             response = rqs.post(url, data).json()
             return response
