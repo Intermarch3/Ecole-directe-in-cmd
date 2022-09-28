@@ -7,7 +7,6 @@
 
 #################### - Import space - ######################
 
-from click import BadParameter
 import requests as rqs
 import os
 import platform 
@@ -172,7 +171,7 @@ class EcoleDirecte:
             else:
                 print('erreur ' + str(response['code']) + '\t message : ' + str(response['message']))
         else:
-            raise BadParameter("Bad args !!!")
+            raise ValueError("Bad args !!!")
 
 
     def fetch_schredule(self, date_debut=None, date_fin=None):
