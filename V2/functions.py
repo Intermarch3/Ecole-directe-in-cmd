@@ -138,7 +138,7 @@ class EcoleDirecte:
         if date_choisie == False:
             date_iso = datetime.now()
             date_today = datetime.strftime(date_iso, '%Y-%m-%d')
-            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte' + str(date_today) + '.awp?verbe=get&'
+            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte' + str(date_today) + '.awp?v=4.18.3&verbe=get&'
             response = rqs.post(url, data, headers=self.header).text
             print(response)
             response = response.json()
