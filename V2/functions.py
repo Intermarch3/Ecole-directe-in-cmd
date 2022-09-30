@@ -8,19 +8,12 @@
 #################### - Import space - ######################
 
 import requests as rqs
-import os, sys
+import os
 import platform 
 from datetime import date, datetime, timedelta 
 from base64 import b64decode
 from bs4 import BeautifulSoup
 from main import *
-
-############################################################
-
-################### - Constant space - #####################
-
-DEBUG = True
-DEV = True
 
 ############################################################
 
@@ -34,6 +27,31 @@ def clear_screen():
     else: 
         command = "clear"
     os.system(command)
+
+
+class BadCreditentials(Exception):
+    def __init__(self, message):
+        super(BadCreditentials, self).__init__(message)
+
+
+class UnknownError(Exception):
+    def __init__(self, message):
+        super(UnknownError, self).__init__(message)
+
+
+class BadToken(Exception):
+    def __init__(self, message):
+        super(BadToken, self).__init__(message)
+
+
+class BadPeriode(Exception):
+    def __init__(self):
+        super(BadPeriode, self).__init__()
+
+
+class BadMatiere(Exception):
+    def __init__(self):
+        super(BadMatiere, self).__init__()
 
 
 class EcoleDirecte:
@@ -68,6 +86,7 @@ class EcoleDirecte:
         try:
             assert type(user) == str and user != ''
             assert type(password) == str and password != ''
+            assert type(debug_mode) == bool
         except:
             print("Bad or empty args !!!")
         # initialize object var
@@ -95,15 +114,14 @@ class EcoleDirecte:
         if debug_mode == True:
             print(response['token'])
         if response['code'] == 200:
-            print("Authentification réussi !!!\n")
             self.token = response['token']
+            self.header['x-token'] = self.token
             self.id = response['data']['accounts'][0]['id']
             self.email = response['data']['accounts'][0]['email']
         elif response['code'] == 505:
-            print("Nom d'utilisateur ou mot de passe invalide !!!\n\n")
+            raise BadCreditentials("Bad username or password !!!")
         else:
-            print("Erreur " + str(response['code']) + " : " + str(response['message']))
-        return response['code'], response['message']
+            raise UnknownError('Error {}: {}'.format(response['code'], response['message']))
 
 
     def fetch_homework(self, date_choisie=False):
@@ -116,11 +134,13 @@ class EcoleDirecte:
         return: None
         """
         data = 'data={\n\t\"token\": \"' + self.token + '\"\n}'
-        if date_choisie == None:
+        if date_choisie == False:
             date_iso = datetime.now()
             date_today = datetime.strftime(date_iso, '%Y-%m-%d')
-            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte' + str(date_today) + '.awp?verbe=get'
-            response = rqs.post(url, data, headers=self.header).json()
+            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte' + str(date_today) + '.awp?verbe=get&'
+            response = rqs.post(url, data, headers=self.header).text
+            print(response)
+            response = response.json()
             data = response['data']
             if self.debug_mode == True:
                 print(data)
