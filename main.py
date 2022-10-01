@@ -20,8 +20,8 @@ DEV = True
 def main():
     global inst
     if DEV == True:
-        user = 'lucasleclerc74@gmail.com'
-        mdp = 'Lulu-ecoledirect-74'
+        user = ''
+        mdp = ''
     else:
         user = str(input("Votre nom d'utilisateur :\n>>> "))
         clear_screen()
