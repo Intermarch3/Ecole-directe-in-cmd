@@ -9,6 +9,8 @@
 
 from time import sleep
 from functions import *
+from base64 import b64decode
+from bs4 import BeautifulSoup
 
 ################### - Constant space - #####################
 
@@ -18,7 +20,6 @@ DEV = True
 
 
 def main():
-    global inst
     if DEV == True:
         user = ''
         mdp = ''
@@ -186,18 +187,21 @@ def menu_grade(instance):
 
 def menu_schredule(instance):
     print("===================================- Menu de l'agenda -===================================")
-    print("\n1 = Agenda de la semaine \n2 = Agenda d'une date précise\n3 = retour\n")
+    print("\n1 = Agenda de la semaine \n2 = Agenda d'une date précise \n3 = exporter mon agenda \n4 = retour\n")
     print("==========================================================================================")
     choice = int(input("Que veut tu observé ?\n>>> "))
     if choice == 1:
         result = instance.fetch_schredule()
         print(result)
     elif choice == 2:
-        date_debut = str(input("Quelle est la date du début ?\n>>> "))
-        date_fin = str(input("Quelle est la date de la fin ?\n>>> "))
+        date_debut = str(input("Quelle est la date du début ? (DD-MM-YYYY) \n>>> "))
+        date_fin = str(input("Quelle est la date de la fin ? (DD-MM-YYYY) \n>>> "))
         result = instance.fetch_schredule(date_debut, date_fin)
         print(result)
     elif choice == 3:
+        clear_screen()
+        export(instance)
+    elif choice == 4:
         clear_screen()
         menu(instance)
     else:
@@ -205,6 +209,32 @@ def menu_schredule(instance):
         sleep(1.5)
         clear_screen()
         menu_schredule(instance)
+
+
+def export(instance):
+    print("=================================- Menu d'exportation -==================================")
+    print("\n1 = exporter agenda de la semaine \n2 = retour\n")
+    print("==========================================================================================")
+    choice = int(input("Que veut tu faire ?\n>>> "))
+    if choice == 1:
+        cal = instance.create_calendar()
+        result = instance.fetch_schredule()
+        cal = instance.add_calendar_event(cal, result)
+        clear_screen()
+        name = input("Nom du fichier: \n>>> ")
+        instance.export_calendar(cal, name)
+        print("\nFichier créer dans le dossier actuel !!!")
+        input("Tape [ENTRER] pour revenir au menu: ")
+        clear_screen()
+        menu(instance)
+    elif choice == 2:
+        clear_screen()
+        menu_schredule(instance)
+    else:
+        print("Tape un nombre compris dans la liste")
+        sleep(1.5)
+        clear_screen()
+        export(instance)
 
 
 if __name__ == '__main__':
