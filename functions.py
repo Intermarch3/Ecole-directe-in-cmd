@@ -1,5 +1,5 @@
 ############################################################
-#               Ecole direct in Python                     #
+#               Ecole-direct-in-Python                     #
 #               Author : Intermarch3                       #
 #               start at : 07/2021                         #
 #               End at : work in progress                  #
@@ -53,6 +53,10 @@ class BadMatiere(Exception):
     def __init__(self):
         super(BadMatiere, self).__init__()
 
+class RequestError(Exception):
+    def __init__(self):
+        super(RequestError, self).__init__()
+
 
 class EcoleDirecte:
     """
@@ -69,7 +73,7 @@ class EcoleDirecte:
         fetch_schredule(date_debut, date_fin):
             - get your schredule 
     """
-    def __init__(self, user, password, debug_mode=False):
+    def __init__(self, user, password):
         """
         Constructs all the necessary attributes and login with your credentials
         - - - - - - -
@@ -86,14 +90,12 @@ class EcoleDirecte:
         try:
             assert type(user) == str and user != ''
             assert type(password) == str and password != ''
-            assert type(debug_mode) == bool
         except:
-            print("Bad or empty args !!!")
+            raise ValueError("Bad args !!!")
         # initialize object var
         self.user = user
         self.password = password
         self.token = ""
-        self.debug_mode = debug_mode
         self.header = {
             'authority': 'api.ecoledirecte.com',
             'accept': 'application/json, text/plain, */*',
@@ -111,8 +113,6 @@ class EcoleDirecte:
         data = 'data={\n\t\"uuid\": \"\",\n\t\"identifiant\": \"' + self.user + '\",\n\t\"motdepasse\": \"' + self.password + '\"\n}'
         url = "https://api.ecoledirecte.com/v3/login.awp?v=4.18.3"
         response = rqs.post(url=url, data=data, headers=self.header).json()
-        if debug_mode == True:
-            print(response['token'])
         if response['code'] == 200:
             self.token = response['token']
             self.header['x-token'] = self.token
@@ -122,7 +122,7 @@ class EcoleDirecte:
         elif response['code'] == 505:
             raise BadCreditentials("Bad username or password !!!")
         else:
-            raise UnknownError('Error {}: {}'.format(response['code'], response['message']))
+            raise RequestError('Error {}: {}'.format(response['code'], response['message']))
 
 
     def fetch_homework(self, date_choisie=False):
@@ -134,65 +134,41 @@ class EcoleDirecte:
         - - - - - - -
         return: None
         """
-        data = 'data={\n\t\"token\": \"' + self.token + '\"\n}'
+        # assert test on args
+        try:
+            assert type(date_choisie) == False or type(date_choisie) == str
+        except:
+            raise ValueError("Bad args !!!")
+        # return homework of today
+        data_rqs = 'data={\n\t\"token\": \"' + self.token + '\"\n}'
         if date_choisie == False:
             date_iso = datetime.now()
             date_today = datetime.strftime(date_iso, '%Y-%m-%d')
-            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte' + str(date_today) + '.awp?v=4.18.3&verbe=get&'
-            response = rqs.post(url, data, headers=self.header).text
-            print(response)
-            response = response.json()
-            data = response['data']
-            if self.debug_mode == True:
-                print(data)
+            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte/' + str(date_today) + '.awp?v=4.18.3&verbe=get&'
+            response = rqs.post(url, data_rqs, headers=self.header).json()
+            if response['code'] == 200:
+                self.token = response['token']
+                return date_today, response['data']
+            else:
+                raise RequestError('erreur ' + str(response['code']) + '\t message : ' + str(response['message']))
+        # return list of incoming homework
         elif date_choisie == "A_venir":
             url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte.awp?v=4.18.3&verbe=get'
-            response = rqs.post(url=url, data=data, headers=self.header).json()
-            data = response['data']
-            if self.debug_mode == True:
-                print(data)
-            print("===================================- Devoirs à venir -====================================")
-            for jour in data:
-                date = datetime.strptime(jour, '%Y-%m-%d')
-                date = date.strftime("%d-%m-%Y")
-                print("\n", date, ": ")
-                for i in range(len(data[jour])):
-                    if data[jour][i]['effectue'] == False:
-                        print("\t", data[jour][i]['matiere'], ": Effectué: [ ]")
-                    else:
-                        print("\t", data[jour][i]['matiere'], ": Effectué: [X]")
-            print("\n==========================================================================================")
-            date_devoir = input("Quelle jour veut tu voir le contenu des devoirs ? (DD-MM-YYYY)\n>>> ")
-            date_devoir = datetime.strptime(date_devoir, '%d-%m-%Y')
-            date_devoir = date_devoir.strftime("%Y-%m-%d")
-            self.token = response['token']
-            data = 'data={\n\t\"token\": \"' + str(self.token) + '\"\n}'
-            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte/' + str(date_devoir) + '.awp?v=4.18.3&verbe=get&'
-            response = rqs.post(url=url, data=data, headers=self.header).json()
-            clear_screen()
-            print("================================- Devoirs le ", date_devoir, " -================================")
-            for i in range(len(response['data']['matieres'])):
-                if response['data']['matieres'][i]['aFaire']['effectue'] == True:
-                    print("\n", response['data']['matieres'][i]['matiere'], ":   [X]")
-                else:
-                    print("\n", response['data']['matieres'][i]['matiere'], ":   [ ]")
-                contenu = b64decode(response['data']['matieres'][i]['aFaire']['contenu'])
-                contenu_soup = BeautifulSoup(contenu, 'html.parser')
-                print(" A faire:\n", contenu_soup.get_text())
-            print("\n===========================================================================================")
-            input("Tape [ENTRER] pour revenir au menu: ")
-            self.token = response['token']
-            clear_screen()
-            menu(self)
-        elif date_choisie != False and date_choisie != "A_venir":
-            date = datetime.strftime(date_choisie, '%Y-%m-%d')
-            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte/' + str(date) + '.awp?v=4.18.3&verbe=get&'
-            response = rqs.post(url=url, data=data, headers=self.header).json()
+            response = rqs.post(url=url, data=data_rqs, headers=self.header).json()
             if response['code'] == 200:
-                print(response['data'][0])
-                return response
+                self.token = response['token']
+                return response['data']
             else:
-                print('erreur ' + str(response['code']) + '\t message : ' + str(response['message']))
+                raise RequestError('erreur ' + str(response['code']) + '\t message : ' + str(response['message']))
+        # return homework of a given date
+        elif date_choisie != False and date_choisie != "A_venir":
+            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte/' + str(date_choisie) + '.awp?v=4.18.3&verbe=get&'
+            response = rqs.post(url=url, data=data_rqs, headers=self.header).json()
+            if response['code'] == 200:
+                self.token = response['token']
+                return response['data']
+            else:
+                raise RequestError('erreur ' + str(response['code']) + '\t message : ' + str(response['message']))
         else:
             raise ValueError("Bad args !!!")
 
