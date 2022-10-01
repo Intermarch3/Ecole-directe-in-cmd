@@ -4,9 +4,11 @@
 
 It allows you to recover:
  - your homeworks
+    - of today
     - to come up
     - of a specific day
  - your course schedule
+    - of today
     - of the week
     - of a specific date
  - your grades (in development)
