@@ -14,7 +14,7 @@ from bs4 import BeautifulSoup
 
 ################### - Constant space - #####################
 
-DEV = True
+DEV = False
 
 ############################################################
 
@@ -36,7 +36,7 @@ def main():
 
 def menu(instance):
     print("=====================================- Menu Général -=====================================")
-    print("\n1 = demander les devoirs \n2 = demander mes notes \n3 = voir mon agenda \n4 = Quitter \n")
+    print("\n1 = Devoirs \n2 = Notes \n3 = Agenda \n4 = Quitter \n")
     print("==========================================================================================")
     choice = int(input("Que voulez vous faire ?\n>>> "))
     if choice == 1:
@@ -47,7 +47,7 @@ def menu(instance):
         menu_grade(instance)
     elif choice == 3:
         clear_screen()
-        menu_schredule(instance)
+        menu_schedule(instance)
     elif choice == 4:
         clear_screen()
         exit()
@@ -103,7 +103,7 @@ def menu_homework(instance):
                     print(" A faire:\n", contenu_soup.get_text())
                 except:
                     pass
-            print("\n===========================================================================================")
+            print("===========================================================================================")
         input("Tape [ENTRER] pour revenir au menu: ")
         clear_screen()
         menu(instance)
@@ -161,20 +161,21 @@ def menu_homework(instance):
 
 def menu_grade(instance):
     print("====================================- Menu des notes -====================================")
-    print("\n1 = Trimestre 1 \n2 = Trimestre 2 \n3 = Trimestre 3\n4 = Moyenne de l'année\n5 = retour\n")
+    print("\n1 = Trimestre 1 \n2 = Trimestre 2 \n3 = Trimestre 3\n4 = Notes Annuel\n5 = retour\n")
     print("==========================================================================================")
     periode = int(input("Quelle période veut tu observé ?\n>>> "))
     if periode == 1:
         clear_screen()
-        print("Note trimestre 1 : ")
+        menu_grades_periode(instance, "A001")
     elif periode == 2:
         clear_screen()
-        print("Note trimestre 2 : ...")
+        menu_grades_periode(instance, "A002")
     elif periode == 3:
         clear_screen()
-        print("Note trimestre 3 : ...")
+        menu_grades_periode(instance, "A003")
     elif periode == 4:
-        print("Moyenne de l'année : ...")
+        clear_screen()
+        menu_grades_annuel(instance)
     elif periode == 5:
         clear_screen()
         menu(instance)
@@ -185,22 +186,98 @@ def menu_grade(instance):
         menu_grade(instance)
 
 
-def menu_schredule(instance):
-    print("===================================- Menu de l'agenda -===================================")
-    print("\n1 = Agenda de la semaine \n2 = Agenda d'une date précise \n3 = exporter mon agenda \n4 = retour\n")
+def menu_grades_periode(instance, IDperiode):
+    print("====================================- Menu des notes -====================================")
+    print("\n1 = Moyenne \n2 = Notes \n3 = retour\n")
     print("==========================================================================================")
-    choice = int(input("Que veut tu observé ?\n>>> "))
+    choice = int(input("Que veut tu voire ?\n>>> "))
+    clear_screen()
     if choice == 1:
-        result = instance.fetch_schredule()
-        print(result)
+        result = instance.fetch_grades()
+        for periode in result['periodes']:
+            if periode['idPeriode'] == IDperiode:
+                print("====================================- " + periode['periode'] + " -====================================")
+                print("\nMoyenne général: ", periode['ensembleMatieres']['moyenneGenerale'])
+                print("Moyenne classe: ", periode['ensembleMatieres']['moyenneClasse'])
+                print("Moyenne classe minimal: ", periode['ensembleMatieres']['moyenneMin'])
+                print("Moyenne classe maximal: ", periode['ensembleMatieres']['moyenneMax'])
+                print("")
+                for matiere in periode['ensembleMatieres']['disciplines']:
+                    if matiere['moyenne'] != "":
+                        print("Moyenne en", matiere['discipline'], ": ", matiere['moyenne'], "/ 20")
+                    else:
+                        print("Moyenne en", matiere['discipline'], "non existante (ou pas de note) !!!")
+                print("\n========================================================================" + "=" * len(periode['periode']))
+                input("Tape [ENTRER] pour revenir au menu: ")
+                clear_screen()
+                menu(instance)
+    elif choice == 2:
+        result = instance.fetch_grades()
+        print("====================================- Notes -====================================\n")
+        for note in result['notes']:
+            if note['codePeriode'] == IDperiode:
+                print(note['libelleMatiere'], " [", note['valeur'], "/", note['noteSur'], "]: ", note['devoir'])
+        print("\n=================================================================================")
+        input("Tape [ENTRER] pour revenir au menu: ")
+        clear_screen()
+        menu(instance)
+    elif choice == 3:
+        clear_screen()
+        menu_grade(periode)
+    else:
+        print("Tape un nombre compris dans la liste")
+        sleep(1.5)
+        clear_screen()
+        menu_grades_periode(periode)
+
+
+
+def menu_grades_annuel(instance):
+    result = instance.fetch_grades()
+    print("====================================- Notes -====================================\n")
+    for note in result['notes']:
+        print(note['libelleMatiere'], " [", note['valeur'], "/", note['noteSur'], "]: ", note['devoir'])
+    print("\n===============================================================================")
+    input("Tape [ENTRER] pour revenir au menu: ")
+    clear_screen()
+    menu(instance)
+
+
+def menu_schedule(instance):
+    print("=============================- Menu exportation de l'agenda -=============================")
+    print("\n1 = Exporter agenda de la semaine \n2 = Exporter agenda d'une date précise \n3 = Exporter agenda du jour \n4 = retour \n")
+    print("==========================================================================================")
+    choice = int(input("Que veut tu faire ?\n>>> "))
+    if choice == 1:
+        result = instance.fetch_schedule()
+        if len(result) > 0:
+            export(instance, result)
+        else:
+            print("Il n'y a pas de cours le(s) jour(s) demandé(s) !!!")
+            input("Tape [ENTRER] pour revenir au menu: ")
+            clear_screen()
+            menu(instance)
     elif choice == 2:
         date_debut = str(input("Quelle est la date du début ? (DD-MM-YYYY) \n>>> "))
         date_fin = str(input("Quelle est la date de la fin ? (DD-MM-YYYY) \n>>> "))
-        result = instance.fetch_schredule(date_debut, date_fin)
-        print(result)
+        result = instance.fetch_schedule(date_debut, date_fin)
+        if len(result) > 0:
+            export(instance, result)
+        else:
+            print("Il n'y a pas de cours le(s) jour(s) demandé(s) !!!")
+            input("Tape [ENTRER] pour revenir au menu: ")
+            clear_screen()
+            menu(instance)
     elif choice == 3:
         clear_screen()
-        export(instance)
+        result = instance.fetch_schedule(today=True)
+        if len(result) > 0:
+            export(instance, result)
+        else:
+            print("Il n'y a pas de cours le(s) jour(s) demandé(s) !!!")
+            input("Tape [ENTRER] pour revenir au menu: ")
+            clear_screen()
+            menu(instance)
     elif choice == 4:
         clear_screen()
         menu(instance)
@@ -208,34 +285,25 @@ def menu_schredule(instance):
         print("Tape un nombre compris dans la liste")
         sleep(1.5)
         clear_screen()
-        menu_schredule(instance)
+        menu_schedule(instance)
 
 
-def export(instance):
-    print("=================================- Menu d'exportation -==================================")
-    print("\n1 = exporter agenda de la semaine \n2 = retour\n")
-    print("==========================================================================================")
-    choice = int(input("Que veut tu faire ?\n>>> "))
-    if choice == 1:
-        name = input("Nom du fichier: \n>>> ")
-        cal = instance.SchreduleInCalendar(name)
-        result = instance.fetch_schredule()
-        cal.add_calendar_event(data=result)
-        clear_screen()
-        cal.export_calendar()
-        print("\nFichier créer dans le dossier actuel !!!")
-        input("Tape [ENTRER] pour revenir au menu: ")
-        clear_screen()
-        menu(instance)
-    elif choice == 2:
-        clear_screen()
-        menu_schredule(instance)
-    else:
-        print("Tape un nombre compris dans la liste")
-        sleep(1.5)
-        clear_screen()
-        export(instance)
+def export(instance, data):
+    name = input("Nom du fichier: \n>>> ")
+    cal = instance.ScheduleInCalendar(name)
+    cal.add_calendar_event(data=data)
+    clear_screen()
+    cal.export_calendar()
+    print("\nFichier créer dans le dossier actuel !!!")
+    input("Tape [ENTRER] pour revenir au menu: ")
+    clear_screen()
+    menu(instance)
 
 
 if __name__ == '__main__':
+    if DEV == True:
+        mode = input("Dev mode on (tape off pour le desactiver ou tape [ENTRER] pour continuer)\n>>> ")
+        if mode == "off" or mode == "OFF":
+            DEV = False
+    clear_screen()
     main()

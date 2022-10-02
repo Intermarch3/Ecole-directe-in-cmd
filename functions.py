@@ -54,7 +54,7 @@ class RequestError(Exception):
 
 class EcoleDirecte:
     """
-    Ecole direct class that return your data like grades, course schredule, homework ...
+    Ecole direct class that return your data like grades, course schedule, homework ...
     - - - - - - -
     Attributes:
         user: your username (str)
@@ -64,19 +64,19 @@ class EcoleDirecte:
     Methods:
         fetch_homework(date_choisie):
             - get your homework
-        fetch_schredule(date_start, date_end):
-            - get your schredule 
-        SchreduleInCalendar (class)
+        fetch_schedule(date_start, date_end):
+            - get your schedule 
+        ScheduleInCalendar (class)
             - create calendar object, add events and export it
     """
-    def __init__(self, user, password):
+    def __init__(self, user, password, version="4.18.3"):
         """
         Constructs all the necessary attributes and login with your credentials
         - - - - - - -
         args:
             user: your username (str)
             password: your password (str)
-            debug_mode: display request response and more (bool)
+            version: the api version (str)
         - - - - - - -
         return: none
         """
@@ -87,6 +87,7 @@ class EcoleDirecte:
         except:
             raise ValueError("Bad args !!!")
         # initialize attributs
+        self.v = version
         self.user = user
         self.password = password
         self.token = ""
@@ -105,7 +106,7 @@ class EcoleDirecte:
         }
         # login
         data = 'data={\n\t\"uuid\": \"\",\n\t\"identifiant\": \"' + self.user + '\",\n\t\"motdepasse\": \"' + self.password + '\"\n}'
-        url = "https://api.ecoledirecte.com/v3/login.awp?v=4.18.3"
+        url = "https://api.ecoledirecte.com/v3/login.awp?v=" + self.v
         response = rqs.post(url=url, data=data, headers=self.header).json()
         if response['code'] == 200:
             self.token = response['token']
@@ -130,7 +131,7 @@ class EcoleDirecte:
         """
         # assert test on args
         try:
-            assert type(date_choisie) == False or type(date_choisie) == str
+            assert type(date_choisie) == bool or type(date_choisie) == str
         except:
             raise ValueError("Bad args !!!")
         # return homework of today
@@ -138,44 +139,44 @@ class EcoleDirecte:
         if date_choisie == False:
             date_iso = datetime.now()
             date_today = datetime.strftime(date_iso, '%Y-%m-%d')
-            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte/' + str(date_today) + '.awp?v=4.18.3&verbe=get&'
+            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte/' + str(date_today) + '.awp?v=' + self.v + '&verbe=get&'
             response = rqs.post(url, data_rqs, headers=self.header).json()
             if response['code'] == 200:
                 self.token = response['token']
                 return date_today, response['data']
             else:
-                raise RequestError('erreur ' + str(response['code']) + '\t message : ' + str(response['message']))
+                raise RequestError('Error {}: {}'.format(response['code'], response['message']))
         # return list of incoming homework
         elif date_choisie == "A_venir":
-            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte.awp?v=4.18.3&verbe=get'
+            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte.awp?v=' + self.v + '&verbe=get'
             response = rqs.post(url=url, data=data_rqs, headers=self.header).json()
             if response['code'] == 200:
                 self.token = response['token']
                 return response['data']
             else:
-                raise RequestError('erreur ' + str(response['code']) + '\t message : ' + str(response['message']))
+                raise RequestError('Error {}: {}'.format(response['code'], response['message']))
         # return homework of a given date
         elif date_choisie != False and date_choisie != "A_venir":
-            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte/' + str(date_choisie) + '.awp?v=4.18.3&verbe=get&'
+            url = 'https://api.ecoledirecte.com/v3/Eleves/' + str(self.id) + '/cahierdetexte/' + str(date_choisie) + '.awp?v=' + self.v + '&verbe=get&'
             response = rqs.post(url=url, data=data_rqs, headers=self.header).json()
             if response['code'] == 200:
                 self.token = response['token']
                 return response['data']
             else:
-                raise RequestError('erreur ' + str(response['code']) + '\t message : ' + str(response['message']))
+                raise RequestError('Error {}: {}'.format(response['code'], response['message']))
         else:
             raise ValueError("Bad args !!!")
 
 
-    def fetch_schredule(self, date_start="", date_end="", today=False):
+    def fetch_schedule(self, date_start="", date_end="", today=False):
         """
-        Get your schredule of the week or of a choosen date
+        Get your schedule of the week or of a choosen date
         - - - - - - -
         args:
             date_start: the start date of the wanted period in DD-MM-YYYY date format (str)
             date_end: the end date of the wanted period in DD-MM-YYYY date format (str)
-            today: if True, fetch schredule of today (bool)
-            if no args: return week schredule
+            today: if True, fetch schedule of today (bool)
+            if no args: return week schedule
         - - - - - - -
         return: response: request response (json)
         """
@@ -184,35 +185,69 @@ class EcoleDirecte:
             assert type(date_start) == str and type(date_end) == str and type(today) == bool
         except:
             raise ValueError("Bad args !!!")
-        # get week schredule
-        if date_start == "" or date_end == "" and today == False:
+        # get week schedule
+        if date_start == "" and date_end == "" and today == False:
             day_iso = date.today()
             day_str = datetime.strftime(day_iso, '%d-%m-%Y')
             day_obj = datetime.strptime(day_str, '%d-%m-%Y')
             date_start = day_obj - timedelta(days=day_obj.weekday())
             date_end = date_start + timedelta(days=5)
             data = 'data={"dateDebut": "' + str(date_start) + '", "dateFin": "' + str(date_end) + '", "avecTrous": false, "token": "' + str(self.token) + '"}'
-            url = "https://api.ecoledirecte.com/v3/E/" + str(self.id) + "/EmploiDuTemps.awp?v=4.18.3&verbe=get&"
+            url = "https://api.ecoledirecte.com/v3/E/" + str(self.id) + "/EmploiDuTemps.awp?v=" + self.v + "&verbe=get&"
             response = rqs.post(url, data, headers=self.header).json()
-            return response['data']
-        # get today schredule
+            if response['code'] == 200:
+                self.token = response['token']
+                return response['data']
+            else:
+                raise RequestError('Error {}: {}'.format(response['code'], response['message']))
+        # get today schedule
         elif today == True:
             day = date.today()
             data = 'data={"dateDebut": "' + str(day) + '", "dateFin": "' + str(day) + '", "avecTrous": false, "token": "' + str(self.token) + '"}'
-            url = "https://api.ecoledirecte.com/v3/E/" + str(self.id) + "/EmploiDuTemps.awp?v=4.18.3&verbe=get&"
+            url = "https://api.ecoledirecte.com/v3/E/" + str(self.id) + "/EmploiDuTemps.awp?v=" + self.v + "&verbe=get&"
             response = rqs.post(url, data, headers=self.header).json()
-            return response['data']
-        # get schredule of given date
+            if response['code'] == 200:
+                self.token = response['token']
+                return response['data']
+            else:
+                raise RequestError('Error {}: {}'.format(response['code'], response['message']))
+        # get schedule of given date
         else:
+            try:
+                assert date_start != "" and date_end != ""
+            except:
+                raise BadPeriode("Date manquantes !!!")
             data = 'data={"dateDebut": "' + str(date_start) + '", "dateFin": "' + str(date_end) + '", "avecTrous": false, "token": "' + str(self.token) + '"}'
-            url = "https://api.ecoledirecte.com/v3/E/" + str(id) + "/EmploiDuTemps.awp?v=4.18.3&verbe=get&"
-            response = rqs.post(url, data).json()
-            return response['data']
+            url = "https://api.ecoledirecte.com/v3/E/" + str(self.id) + "/EmploiDuTemps.awp?v=" + self.v + "&verbe=get&"
+            response = rqs.post(url, data, headers=self.header).json()
+            if response['code'] == 200:
+                self.token = response['token']
+                return response['data']
+            else:
+                raise RequestError('Error {}: {}'.format(response['code'], response['message']))
 
 
-    class SchreduleInCalendar:
+    def fetch_grades(self):
         """
-        Schredule in Calendar class that create a calendar object, add event and export it (.ics)
+        Get your grades
+        - - - - - - -
+        args: none
+        - - - - - - -
+        return: response: request response (json)
+        """
+        data = 'data={\n\t\"token\": \"' + self.token + '\"\n}'
+        url = 'https://api.ecoledirecte.com/v3/eleves/'+ str(self.id) +'/notes.awp?v=' + self.v + '&verbe=get&'
+        response = rqs.post(url, data, headers=self.header).json()
+        if response['code'] == 200:
+            self.token = response['token']
+            return response['data']
+        else:
+            raise RequestError('Error {}: {}'.format(response['code'], response['message']))
+
+
+    class ScheduleInCalendar:
+        """
+        Schedule in Calendar class that create a calendar object, add event and export it (.ics)
         - - - - - - -
         Attributes:
             name: name of the calendar file (str)
@@ -244,10 +279,10 @@ class EcoleDirecte:
 
         def add_calendar_event(self, data):
             """
-            add event in a calendar object with your schredule data
+            add event in a calendar object with your schedule data
             - - - - - - -
             args: 
-                data: the response of schredule request (json)
+                data: the response of schedule request (json)
             - - - - - - -
             return: 
                 calendar object (obj)
