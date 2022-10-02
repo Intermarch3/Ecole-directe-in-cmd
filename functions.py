@@ -54,7 +54,7 @@ class RequestError(Exception):
 
 class EcoleDirecte:
     """
-    Ecole direct class that return you data like grades, course schredule, homework ...
+    Ecole direct class that return your data like grades, course schredule, homework ...
     - - - - - - -
     Attributes:
         user: your username (str)
@@ -64,14 +64,10 @@ class EcoleDirecte:
     Methods:
         fetch_homework(date_choisie):
             - get your homework
-        fetch_schredule(date_debut, date_fin):
+        fetch_schredule(date_start, date_end):
             - get your schredule 
-        create_calendar()
-            - create a calendar object
-        add_calendar_event(calendar, data)
-            - add event to calendar object
-        export_calendar(calendar, name)
-            - create a calendar file with a calendar object
+        SchreduleInCalendar (class)
+            - create calendar object, add events and export it
     """
     def __init__(self, user, password):
         """
@@ -82,9 +78,7 @@ class EcoleDirecte:
             password: your password (str)
             debug_mode: display request response and more (bool)
         - - - - - - -
-        return: 
-            response code (str)
-            response message (str)
+        return: none
         """
         # assert test on args
         try:
@@ -92,7 +86,7 @@ class EcoleDirecte:
             assert type(password) == str and password != ''
         except:
             raise ValueError("Bad args !!!")
-        # initialize object var
+        # initialize attributs
         self.user = user
         self.password = password
         self.token = ""
@@ -173,86 +167,122 @@ class EcoleDirecte:
             raise ValueError("Bad args !!!")
 
 
-    def fetch_schredule(self, date_debut=None, date_fin=None, today=False):
+    def fetch_schredule(self, date_start="", date_end="", today=False):
         """
         Get your schredule of the week or of a choosen date
         - - - - - - -
         args:
-            date_debut: the start date of the wanted period in DD-MM-YYYY date format (str)
+            date_start: the start date of the wanted period in DD-MM-YYYY date format (str)
+            date_end: the end date of the wanted period in DD-MM-YYYY date format (str)
+            today: if True, fetch schredule of today (bool)
+            if no args: return week schredule
         - - - - - - -
-        return: None
+        return: response: request response (json)
         """
-        if date_debut == None or date_fin == None and today == False:
+        # assert test on args
+        try:
+            assert type(date_start) == str and type(date_end) == str and type(today) == bool
+        except:
+            raise ValueError("Bad args !!!")
+        # get week schredule
+        if date_start == "" or date_end == "" and today == False:
             day_iso = date.today()
             day_str = datetime.strftime(day_iso, '%d-%m-%Y')
             day_obj = datetime.strptime(day_str, '%d-%m-%Y')
-            date_debut = day_obj - timedelta(days=day_obj.weekday())
-            date_fin = date_debut + timedelta(days=5)
-            data = 'data={"dateDebut": "' + str(date_debut) + '", "dateFin": "' + str(date_fin) + '", "avecTrous": false, "token": "' + str(self.token) + '"}'
+            date_start = day_obj - timedelta(days=day_obj.weekday())
+            date_end = date_start + timedelta(days=5)
+            data = 'data={"dateDebut": "' + str(date_start) + '", "dateFin": "' + str(date_end) + '", "avecTrous": false, "token": "' + str(self.token) + '"}'
             url = "https://api.ecoledirecte.com/v3/E/" + str(self.id) + "/EmploiDuTemps.awp?v=4.18.3&verbe=get&"
             response = rqs.post(url, data, headers=self.header).json()
             return response['data']
+        # get today schredule
         elif today == True:
             day = date.today()
             data = 'data={"dateDebut": "' + str(day) + '", "dateFin": "' + str(day) + '", "avecTrous": false, "token": "' + str(self.token) + '"}'
             url = "https://api.ecoledirecte.com/v3/E/" + str(self.id) + "/EmploiDuTemps.awp?v=4.18.3&verbe=get&"
             response = rqs.post(url, data, headers=self.header).json()
             return response['data']
+        # get schredule of given date
         else:
-            data = 'data={"dateDebut": "' + str(date_debut) + '", "dateFin": "' + str(date_fin) + '", "avecTrous": false, "token": "' + str(self.token) + '"}'
+            data = 'data={"dateDebut": "' + str(date_start) + '", "dateFin": "' + str(date_end) + '", "avecTrous": false, "token": "' + str(self.token) + '"}'
             url = "https://api.ecoledirecte.com/v3/E/" + str(id) + "/EmploiDuTemps.awp?v=4.18.3&verbe=get&"
             response = rqs.post(url, data).json()
             return response['data']
 
 
-    def create_calendar(self):
+    class SchreduleInCalendar:
         """
-        create a calendar object
+        Schredule in Calendar class that create a calendar object, add event and export it (.ics)
         - - - - - - -
-        args: none
+        Attributes:
+            name: name of the calendar file (str)
         - - - - - - -
-        return: 
-            calendar object (obj)
+        Methods:
+            add_calendar_event(calendar, data)
+                - add event to calendar object
+            export_calendar(calendar, name)
+                - create a calendar file with a calendar object
         """
-        c = Calendar()
-        return c
+        def __init__(self, name=""):
+            """
+            create calendar object
+            - - - - - - -
+            args:
+                name: the file name (str)
+            - - - - - - -
+            return: none
+            """
+            # assert test on args
+            try:
+                assert type(name) == str and name != ""
+            except:
+                raise ValueError("Bad args !!!")
+            # initialize attributs
+            self.name = name
+            self.calendar = Calendar(creator="Intermarch3")
 
 
-    def add_calendar_event(self, calendar, data):
-        """
-        add event in a calendar object with your schredule
-        - - - - - - -
-        args: 
-            data: the response of schredule request (json)
-        - - - - - - -
-        return: 
-            calendar object (obj)
-        """
-        for cour in data:
-            e = Event()
-            e.name = cour['matiere']
-            e.begin = cour['start_date']
-            e.end = cour['end_date']
-            desc = "Prof: " + cour['prof']
-            if cour['salle'] != "":
-                desc += "\nSalle:" + cour['salle']
-            e.description = desc
-            calendar.events.add(e)
-        return calendar
+        def add_calendar_event(self, data):
+            """
+            add event in a calendar object with your schredule data
+            - - - - - - -
+            args: 
+                data: the response of schredule request (json)
+            - - - - - - -
+            return: 
+                calendar object (obj)
+            """
+            # assert test on args
+            try:
+                assert type(data) == dict or type(data) == list
+            except:
+                raise ValueError("Bad args !!!")
+            # add event of each course
+            for cour in data:
+                e = Event()
+                e.name = cour['matiere']
+                e.begin = cour['start_date']
+                e.end = cour['end_date']
+                desc = "Prof: " + cour['prof']
+                if cour['salle'] != "":
+                    desc += "\nSalle:" + cour['salle']
+                e.description = desc
+                self.calendar.events.add(e)
+            return self.calendar
 
 
-    def export_calendar(self, calendar, file_name):
-        """
-        Create a calendar file (ics)
-        - - - - - - -
-        args:
-            calendar: the calendar object (obj)
-            name: the file name (str)
-        - - - - - - -
-        return: none
-        """
-        name = str(file_name) + ".ics"
-        with open(name, 'w') as file:
-            file.writelines(calendar.serialize_iter())
-            file.close()
+        def export_calendar(self):
+            """
+            Create a calendar file (ics)
+            - - - - - - -
+            args:
+                calendar: the calendar object (obj)
+                name: the file name (str)
+            - - - - - - -
+            return: none
+            """
+            name = str(self.name) + ".ics"
+            with open(name, 'w') as file:
+                file.writelines(self.calendar.serialize_iter())
+                file.close()
 
