@@ -11,10 +11,8 @@ It allows you to recover:
     - of today
     - of the week
     - of a specific date
- - your grades (in development)
-    - class average
-    - quarterly average
-    - average for the year
+ - your grades per periodes
+    - averages (min, max, ...)
     - all grades
 
 ## Launch
@@ -25,8 +23,6 @@ It allows you to recover:
 #### `python main.py`
 
 #### And that's it, the program is running 🎉
-
-### ⚠ The project is under development so the features are not yet operational
 
 ## Help/contact
 If you want to help me in this project or report me a bug, don't hesitate.
