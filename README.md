@@ -24,6 +24,7 @@ It allows you to recover:
 
 #### And that's it, the program is running 🎉
 
+### If requests doesnt work, check if the APIVERSION is up to date (look on ecole direct request)
 ## Help/contact
 If you want to help me in this project or report me a bug, don't hesitate.
 My social media is my profil and for a bug, just creat an issue.

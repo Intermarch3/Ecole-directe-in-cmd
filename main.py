@@ -2,7 +2,7 @@
 #               Ecole-direct-in-Python                     #
 #               Author : Intermarch3                       #
 #               start at : 07/2021                         #
-#               End at : work in progress                  #
+#               End at : 02/2022                           #
 ############################################################
 
 #################### - Import space - ######################
@@ -14,6 +14,7 @@ from bs4 import BeautifulSoup
 
 ################### - Constant space - #####################
 
+APIVERSION = "4.19.0"
 DEV = False
 
 ############################################################
@@ -29,7 +30,7 @@ def main():
         mdp = str(input("Votre mot de passe : \n>>> "))
         clear_screen()
     print("Authentification en cours . . .")
-    inst = EcoleDirecte(user, mdp)
+    inst = EcoleDirecte(user, mdp, APIVERSION)
     clear_screen()
     menu(inst)
 

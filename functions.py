@@ -2,7 +2,7 @@
 #               Ecole-direct-in-Python                     #
 #               Author : Intermarch3                       #
 #               start at : 07/2021                         #
-#               End at : work in progress                  #
+#               End at : 02/2022                           #
 ############################################################
 
 #################### - Import space - ######################
