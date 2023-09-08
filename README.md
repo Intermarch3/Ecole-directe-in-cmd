@@ -28,5 +28,5 @@ It allows you to recover:
 If you want to help me in this project or report me a bug, don't hesitate.
 
 ### ⚠ As I am no longer a high school student, i no longer have access to ecole direct so i can't improve it anymore.
-# here is a good project related to mine : [EDSecurityTool](https://github.com/Terminarox/EDSecurityTool-ecoledirecte-brute-force) by Terminarox
+### here is a good project related to mine : [EDSecurityTool](https://github.com/Terminarox/EDSecurityTool-ecoledirecte-brute-force) by Terminarox
 
