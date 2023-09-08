@@ -19,13 +19,13 @@ It allows you to recover:
 
 #### 1) Download the project
 
-#### 2) On the terminal, write the next line :
-#### `python main.py`
+#### 2) Lauch it on the terminal : `python main.py`
 
 #### And that's it, the program is running 🎉
 
-### If requests doesnt work, check if the APIVERSION is up to date (look on ecole direct request)
+### If requests doesnt work, check if the APIVERSION is up to date (look on ecole direct requests)  
 ## Help/contact
 If you want to help me in this project or report me a bug, don't hesitate.
-My social media is my profil and for a bug, just creat an issue.
+
+### ⚠ As I am no longer a high school student, i no longer have access to ecole direct so i can't improve it anymore.
 
